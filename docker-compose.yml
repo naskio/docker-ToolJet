@@ -1,41 +1,9 @@
 version: '3.8'
 
 services:
-  tooljet-client:
-    tty: true
-    stdin_open: true
-    command: openresty -g "daemon off;"
-    image: tooljet/tooljet-client-ce:latest
-    restart: always
-    container_name: tooljet-client
-    depends_on:
-      - tooljet-server
-    environment:
-      VIRTUAL_PROTO: https
-      VIRTUAL_PORT: 443
-      VIRTUAL_HOST: ${VIRTUAL_HOST}
-      TOOLJET_SERVER_URL: http://tooljet-server:3000
-    #      LETSENCRYPT_HOST: ${VIRTUAL_HOST}
-    #      LETSENCRYPT_EMAIL: ${WEBMASTER_EMAIL}
-    volumes:
-      - logs:/var/log/openresty/
-      - certs:/etc/resty-auto-ssl/
-      - fallbackcerts:/etc/fallback-certs
-    expose:
-      - 80
-      - 443
-    #    ports:
-    #      - 80:80
-    #      - 443:443
-    networks:
-      - auto-reverse-proxy-global-network
-      #      - postgres_service-network
-      - tooljet-network
-
-
-  tooljet-server:
+  tooljet:
     image: tooljet/tooljet-server-ce:latest
-    container_name: tooljet-server
+    container_name: tooljet
     # start an interactive shell
     # You can set stdin_open: true, tty: true, however that won't actually give you a proper shell with up, because logs are being streamed from all the containers.
     tty: true # docker run -t
@@ -46,10 +14,9 @@ services:
     #      - "3000:3000"
     expose:
       - 3000
-    #    env_file: .env
     environment:
-      SERVE_CLIENT: "false"
-      TOOLJET_HOST: ${TOOLJET_HOST}
+      SERVE_CLIENT: "true"
+      TOOLJET_HOST: "https://${VIRTUAL_HOST}"
       PG_HOST: postgres
       PG_PORT: 5432
       PG_DB: ${PG_DB}
@@ -58,21 +25,28 @@ services:
       LOCKBOX_MASTER_KEY: ${LOCKBOX_MASTER_KEY}
       SECRET_KEY_BASE: ${SECRET_KEY_BASE}
       DISABLE_SIGNUPS: ${DISABLE_SIGNUPS}
+      DEFAULT_FROM_EMAIL: ${DEFAULT_FROM_EMAIL}
+      SMTP_USERNAME: ${SMTP_USERNAME}
+      SMTP_PASSWORD: ${SMTP_PASSWORD}
+      SMTP_DOMAIN: ${SMTP_DOMAIN} # domain or host
+      SMTP_PORT: ${SMTP_PORT}
       APM_VENDOR: ${APM_VENDOR}
       SENTRY_DNS: ${SENTRY_DNS}
       SENTRY_DEBUG: ${SENTRY_DEBUG}
+      TOOLJET_SERVER_URL: "https://${VIRTUAL_HOST}"
+      #      NODE_EXTRA_CA_CERTS: ${NODE_EXTRA_CA_CERTS}
+      #      ASSET_PATH: "https://${VIRTUAL_HOST}"
+      VIRTUAL_PORT: 3000
+      VIRTUAL_HOST: ${VIRTUAL_HOST}
+      LETSENCRYPT_HOST: ${VIRTUAL_HOST}
+      LETSENCRYPT_EMAIL: ${WEBMASTER_EMAIL}
     networks:
+      - auto-reverse-proxy-global-network
       - postgres_service-network
-      - tooljet-network
 
-volumes:
-  certs:
-  logs:
-  fallbackcerts:
 
 networks:
   auto-reverse-proxy-global-network:
     external: true
   postgres_service-network:
     external: true
-  tooljet-network:
