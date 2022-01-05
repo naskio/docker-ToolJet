@@ -18,3 +18,4 @@ Docker compose configuration for ToolJet, ready to use
 ## Further information
 
 Read more at the [ToolJet website](https://docs.tooljet.com/docs/deployment/docker)
+and [this](https://docs.tooljet.com/docs/deployment/env-vars/)
