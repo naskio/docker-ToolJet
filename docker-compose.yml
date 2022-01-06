@@ -2,7 +2,8 @@ version: '3.8'
 
 services:
   tooljet:
-    image: tooljet/tooljet-server-ce:latest
+    #    image: tooljet/tooljet-server-ce:latest
+    image: tooljet/tooljet-ce
     container_name: tooljet
     # start an interactive shell
     # You can set stdin_open: true, tty: true, however that won't actually give you a proper shell with up, because logs are being streamed from all the containers.
@@ -16,6 +17,7 @@ services:
       - 3000
     environment:
       SERVE_CLIENT: "true"
+      NODE_ENV: "production"
       TOOLJET_HOST: "https://${VIRTUAL_HOST}"
       PG_HOST: postgres
       PG_PORT: 5432
